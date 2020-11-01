@@ -2,7 +2,7 @@ import argparse
 import os
 
 import matplotlib
-matplotlib.use('Agg')
+# matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -72,6 +72,19 @@ def boxplot(file_path: str, data: list, title: str, x_label: str, y_label: str, 
     plt.close()
 
 
+
+
+
+def our_boxplot(path):
+    results = pd.read_csv(path+'/results.csv', delimiter=';')
+    results.boxplot(column='DICE', by='LABEL')
+    plt.savefig(os.path.join(path,'results','DICE.png'))
+    # plt.show()
+
+
+
+
+
 def format_data(data, label: str, metric: str):
     return data[data['LABEL'] == label][metric].values
 
@@ -90,9 +103,14 @@ def main(csv_file: str, plot_dir: str):
     metrics_yaxis_limits = ((0.0, 1.0), (0.0, None))  # tuples of y-axis limits (min, max) for each metric. Use None if unknown
     labels = ('WhiteMatter', 'Amygdala')  # the brain structures/tissues you are interested in
 
+
     last = get_newest_folder('./mia-result/')
+    plot_dir = os.path.join(last, 'results')
+    os.makedirs(plot_dir, exist_ok=True)
+
     csv_file = last + '/results.csv'
     print(csv_file)
+    our_boxplot(last)
 
 
     # load the CSVs. We usually want to compare different methods (e.g. a set of different features), therefore,
