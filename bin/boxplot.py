@@ -12,9 +12,9 @@ def get_newest_folder(path):
     date = None
 
     for f in get_all_folders(path):
-        if (date == None or date < os.path.getmtime(f)):
+        if (date == None or date < os.path.getmtime(path+f)):
             newest = f
-            date = os.path.getmtime(f)
+            date = os.path.getmtime(path+f)
 
     return os.path.join(path, newest)
 
@@ -90,8 +90,9 @@ def main(csv_file: str, plot_dir: str):
     metrics_yaxis_limits = ((0.0, 1.0), (0.0, None))  # tuples of y-axis limits (min, max) for each metric. Use None if unknown
     labels = ('WhiteMatter', 'Amygdala')  # the brain structures/tissues you are interested in
 
-    last = get_newest_folder('./mia-result')
-    csv_file = './mia-result/' + last + '/results.csv'
+    last = get_newest_folder('./mia-result/')
+    csv_file = last + '/results.csv'
+    print(csv_file)
 
 
     # load the CSVs. We usually want to compare different methods (e.g. a set of different features), therefore,
