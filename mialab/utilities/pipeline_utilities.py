@@ -283,7 +283,7 @@ def post_process(img: structure.BrainImage, segmentation: sitk.Image, probabilit
     return pipeline.execute(segmentation)
 
 
-def init_evaluator(directory: str, result_file_name: str = 'results.csv') -> eval_.Evaluator:
+def init_evaluator(directory: object, result_file_name: object = 'results.csv') -> object:
     """Initializes an evaluator.
 
     Args:
@@ -306,6 +306,64 @@ def init_evaluator(directory: str, result_file_name: str = 'results.csv') -> eva
     # warnings.warn('Initialized evaluation with the Dice coefficient. Do you know other suitable metrics?')
     # you should add more metrics than just the Hausdorff distance!
     return evaluator
+
+
+
+# def init_evaluator(directory: object, result_file_name: object = 'results.csv') -> object:
+#     """Initializes an evaluator.
+#
+#     Args:
+#         directory (str): The directory for the results file.
+#         result_file_name (str): The result file name (CSV file).
+#
+#     Returns:
+#         eval.Evaluator: An evaluator.
+#     """
+#     os.makedirs(directory, exist_ok=True)  # generate result directory, if it does not exists
+#
+#     evaluator = eval_.Evaluator(eval_.ConsoleEvaluatorWriter(5))
+#     evaluator.add_writer(eval_.CSVEvaluatorWriter(os.path.join(directory, result_file_name)))
+#     evaluator.add_label(1, 'WhiteMatter')
+#     evaluator.add_label(2, 'GreyMatter')
+#     evaluator.add_label(3, 'Hippocampus')
+#     evaluator.add_label(4, 'Amygdala')
+#     evaluator.add_label(5, 'Thalamus')
+#     evaluator.metrics = [metric.DiceCoefficient(), metric.HausdorffDistance()]
+#     # warnings.warn('Initialized evaluation with the Dice coefficient. Do you know other suitable metrics?')
+#     # you should add more metrics than just the Hausdorff distance!
+#     return evaluator
+
+
+
+def init_evaluator() -> eval_.Evaluator:
+    """Initializes an evaluator.
+
+    Args:
+        directory (str): The directory for the results file.
+        result_file_name (str): The result file name (CSV file).
+
+    Returns:
+        eval.Evaluator: An evaluator.
+    """
+    # os.makedirs(directory, exist_ok=True)  # generate result directory, if it does not exists
+
+    # evaluator = eval_.Evaluator(eval_.ConsoleEvaluatorWriter(5))
+    evaluation_metrics = [metric.DiceCoefficient(), metric.HausdorffDistance()]
+
+    evaluator = eval_.SegmentationEvaluator(evaluation_metrics,{})
+    # evaluator.add_writer(eval_.CSVEvaluatorWriter(os.path.join(directory, result_file_name)))
+    evaluator.add_label(1, 'WhiteMatter')
+    evaluator.add_label(2, 'GreyMatter')
+    evaluator.add_label(3, 'Hippocampus')
+    evaluator.add_label(4, 'Amygdala')
+    evaluator.add_label(5, 'Thalamus')
+
+    # warnings.warn('Initialized evaluation with the Dice coefficient. Do you know other suitable metrics?')
+    # you should add more metrics than just the Hausdorff distance!
+    return evaluator
+
+
+
 
 
 def pre_process_batch(data_batch: t.Dict[structure.BrainImageTypes, structure.BrainImage],

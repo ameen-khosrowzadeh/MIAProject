@@ -71,7 +71,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
     warnings.warn('Random forest parameters not properly set.')
     forest = sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
-                                                n_estimators=1,
+                                                n_estimators=10,
                                                 max_depth=5)
 
     start_time = timeit.default_timer()
@@ -81,6 +81,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     # create a result directory with timestamp
     t = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     result_dir = os.path.join(result_dir, t)
+
     os.makedirs(result_dir, exist_ok=True)
 
     print('-' * 5, 'Testing...')
