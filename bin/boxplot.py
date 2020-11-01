@@ -75,10 +75,10 @@ def boxplot(file_path: str, data: list, title: str, x_label: str, y_label: str, 
 
 
 
-def our_boxplot(path):
+def boxplot_per_metric(path,metric):
     results = pd.read_csv(path+'/results.csv', delimiter=';')
-    results.boxplot(column='DICE', by='LABEL')
-    plt.savefig(os.path.join(path,'results','DICE.png'))
+    results.boxplot(column=metric, by='LABEL')
+    plt.savefig(os.path.join(path,'results',metric+'.png'))
     # plt.show()
 
 
@@ -110,7 +110,9 @@ def main(csv_file: str, plot_dir: str):
 
     csv_file = last + '/results.csv'
     print(csv_file)
-    our_boxplot(last)
+
+    for metric in metrics:
+        boxplot_per_metric(last,metric)
 
 
     # load the CSVs. We usually want to compare different methods (e.g. a set of different features), therefore,
