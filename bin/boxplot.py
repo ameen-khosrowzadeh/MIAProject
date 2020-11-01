@@ -7,6 +7,22 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
+def get_newest_folder(path):
+    newest = None
+    date = None
+
+    for f in get_all_folders(path):
+        if (date == None or date < os.path.getmtime(f)):
+            newest = f
+            date = os.path.getmtime(f)
+
+    return os.path.join(path, newest)
+
+
+def get_all_folders(path):
+    return [x for x in os.listdir(path) if os.path.isfile(x) == False]
+
+
 def set_box_format(bp, color):
     plt.setp(bp['boxes'], color=color)
     plt.setp(bp['whiskers'], color=color)
@@ -73,6 +89,10 @@ def main(csv_file: str, plot_dir: str):
     metrics = ('DICE', 'HDRFDST')  # the metrics we want to plot the results for
     metrics_yaxis_limits = ((0.0, 1.0), (0.0, None))  # tuples of y-axis limits (min, max) for each metric. Use None if unknown
     labels = ('WhiteMatter', 'Amygdala')  # the brain structures/tissues you are interested in
+
+    last = get_newest_folder('./mia-result')
+    csv_file = './mia-result/' + last + '/results.csv'
+
 
     # load the CSVs. We usually want to compare different methods (e.g. a set of different features), therefore,
     # we load two CSV (for simplicity, it is the same here)
