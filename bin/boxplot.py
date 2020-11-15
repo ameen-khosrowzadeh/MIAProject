@@ -100,6 +100,7 @@ def metric_to_readable_text(metric: str):
 
 def main(csv_file: str, plot_dir: str):
     metrics = ('DICE', 'HDRFDST')  # the metrics we want to plot the results for
+    metrics = ('DICE', 'HDRFDST', 'ACURCY', 'VOLSMTY', 'PRCISON', 'MUTINF', 'KAPPA', 'JACRD', 'GCOERR')
     metrics_yaxis_limits = ((0.0, 1.0), (0.0, None))  # tuples of y-axis limits (min, max) for each metric. Use None if unknown
     labels = ('WhiteMatter', 'Amygdala')  # the brain structures/tissues you are interested in
 

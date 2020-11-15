@@ -2,6 +2,7 @@
 
 The pipeline is used for brain tissue segmentation using a decision forest classifier.
 """
+
 import argparse
 import datetime
 import os
@@ -14,6 +15,7 @@ import sklearn.ensemble as sk_ensemble
 import numpy as np
 import pymia.data.conversion as conversion
 import pymia.evaluation.writer as writer
+import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.join(os.path.dirname(sys.argv[0]), '..'))  # append the MIALab root directory to Python path
 # fixes the ModuleNotFoundError when executing main.py in the console after code changes (e.g. git pull)
@@ -70,9 +72,11 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
 
     warnings.warn('Random forest parameters not properly set.')
+    # plt.imshow(images[0].feature_matrix[0])
+    print(np.shape(images[0].feature_matrix[0]))
     forest = sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
                                                 n_estimators=10,
-                                                max_depth=5)
+                                                max_depth=10)
 
     start_time = timeit.default_timer()
     forest.fit(data_train, labels_train)
