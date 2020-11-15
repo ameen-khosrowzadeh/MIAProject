@@ -348,8 +348,8 @@ def init_evaluator() -> eval_.Evaluator:
     # os.makedirs(directory, exist_ok=True)  # generate result directory, if it does not exists
 
     # evaluator = eval_.Evaluator(eval_.ConsoleEvaluatorWriter(5))
-    # evaluation_metrics = [metric.DiceCoefficient(), metric.HausdorffDistance()]
-    evaluation_metrics = [metric.DiceCoefficient(), metric.HausdorffDistance(95), metric.CohenKappaCoefficient(), metric.Accuracy(), metric.GlobalConsistencyError(), metric.JaccardCoefficient(), metric.MutualInformation(), metric.Precision(), metric.VolumeSimilarity()]
+    evaluation_metrics = [metric.DiceCoefficient(), metric.HausdorffDistance()]
+    # evaluation_metrics = [metric.DiceCoefficient(), metric.HausdorffDistance(95), metric.CohenKappaCoefficient(), metric.Accuracy(), metric.GlobalConsistencyError(), metric.JaccardCoefficient(), metric.MutualInformation(), metric.Precision(), metric.VolumeSimilarity()]
 
     evaluator = eval_.SegmentationEvaluator(evaluation_metrics,{})
     # evaluator.add_writer(eval_.CSVEvaluatorWriter(os.path.join(directory, result_file_name)))

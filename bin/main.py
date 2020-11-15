@@ -16,7 +16,7 @@ import numpy as np
 import pymia.data.conversion as conversion
 import pymia.evaluation.writer as writer
 import matplotlib.pyplot as plt
-
+from mpl_toolkits.mplot3d import Axes3D
 sys.path.insert(0, os.path.join(os.path.dirname(sys.argv[0]), '..'))  # append the MIALab root directory to Python path
 # fixes the ModuleNotFoundError when executing main.py in the console after code changes (e.g. git pull)
 # somehow pip install does not keep track of packages
@@ -30,6 +30,59 @@ LOADING_KEYS = [structure.BrainImageTypes.T1w,
                 structure.BrainImageTypes.GroundTruth,
                 structure.BrainImageTypes.BrainMask,
                 structure.BrainImageTypes.RegistrationTransform]  # the list of data we will load
+
+
+
+def visualization(images):
+
+    T1 = (images[0].images[structure.BrainImageTypes.T1w])
+    T2 = (images[0].images[structure.BrainImageTypes.T2w])
+    gt = (images[0].images[structure.BrainImageTypes.GroundTruth])
+    bm = (images[0].images[structure.BrainImageTypes.BrainMask])
+
+    # plt.figure()
+    # plt.subplot(2, 2, 1)
+    # plt.imshow(sitk.GetArrayFromImage(T1)[100, :, :])
+    # plt.subplot(2, 2, 2)
+    # plt.imshow(sitk.GetArrayFromImage(T2)[100, :, :])
+    # plt.subplot(2, 2, 3)
+    # plt.imshow(sitk.GetArrayFromImage(gt)[100, :, :])
+    # plt.subplot(2, 2, 4)
+    # plt.imshow(sitk.GetArrayFromImage(bm)[100, :, :])
+    # plt.show()
+
+    plt.figure()
+    plt.subplot(2, 2, 1)
+    plt.imshow(sitk.GetArrayFromImage(T1)[:, 120, :])
+    plt.colorbar()
+    plt.subplot(2, 2, 2)
+    plt.imshow(sitk.GetArrayFromImage(gt)[:, 120, :])
+    plt.colorbar()
+    plt.subplot(2, 2, 3)
+    plt.imshow(sitk.GetArrayFromImage(T2)[80, :, :])
+    plt.colorbar()
+    plt.subplot(2, 2, 4)
+    plt.imshow(sitk.GetArrayFromImage(gt)[80, :, :])
+    plt.colorbar()
+    plt.show()
+    # threeDvisualization(images)
+
+
+def threeDvisualization(images):
+    gt = sitk.GetArrayFromImage(images[0].images[structure.BrainImageTypes.GroundTruth])
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    A=(gt == 5)
+    H=(gt == 4)
+    T=(gt == 3)
+    vox=A|H|T
+    colors = np.empty(vox.shape, dtype=object)
+    colors[A]='red'
+    colors[H]='blue'
+    colors[T]='green'
+    ax.voxels(vox, facecolors=colors)
+    plt.show()
+
 
 
 def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_dir: str):
@@ -72,7 +125,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     labels_train = np.concatenate([img.feature_matrix[1] for img in images]).squeeze()
 
     warnings.warn('Random forest parameters not properly set.')
-    # plt.imshow(images[0].feature_matrix[0])
+    visualization(images)
     print(np.shape(images[0].feature_matrix[0]))
     forest = sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
                                                 n_estimators=10,
