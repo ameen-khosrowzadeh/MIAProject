@@ -5,6 +5,8 @@ import matplotlib
 # matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
+
 
 
 def get_newest_folder(path):
@@ -95,12 +97,17 @@ def metric_to_readable_text(metric: str):
     elif metric == 'HDRFDST':
         return 'Hausdorff distance (mm)'
     else:
-        raise ValueError('Metric "{}" unknown'.format(metric))
+        # raise Warning('Metric "{}" unknown'.format(metric))
+        return 'unknown'
 
 
 def main(csv_file: str, plot_dir: str):
-    metrics = ('DICE', 'HDRFDST')  # the metrics we want to plot the results for
+    # metrics = ('DICE', 'HDRFDST')  # the metrics we want to plot the results for
+    # metrics = ('DICE', 'HDRFDST', 'ACURCY','KAPPA')
     metrics = ('DICE', 'HDRFDST', 'ACURCY', 'VOLSMTY', 'PRCISON', 'MUTINF', 'KAPPA', 'JACRD', 'GCOERR')
+
+
+    metrics= ('ACURCY', 'AUC' , 'DICE' , 'FN' , 'FP' , 'HDRFDST' , 'JACRD' , 'KAPPA' ,'MUTINF' , 'PRCISON', 'SNSVTY' , 'SPCFTY' , 'TN' , 'TP' , 'VOLSMTY' )
     metrics_yaxis_limits = ((0.0, 1.0), (0.0, None))  # tuples of y-axis limits (min, max) for each metric. Use None if unknown
     labels = ('WhiteMatter', 'Amygdala')  # the brain structures/tissues you are interested in
 
@@ -126,6 +133,7 @@ def main(csv_file: str, plot_dir: str):
     # some parameters to improve the plot's readability
     methods = ('Method 1', 'Method 2')
     title = 'Your experiment comparing method 1 and 2 on {}'
+
 
     for label in labels:
         for metric, (min_, max_) in zip(metrics, metrics_yaxis_limits):

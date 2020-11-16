@@ -16,6 +16,19 @@ from sklearn.metrics import plot_roc_curve
 from sklearn.metrics import plot_confusion_matrix
 from sklearn.preprocessing import label_binarize
 
+import numpy as np
+import matplotlib.pyplot as plt
+from itertools import cycle
+
+from sklearn import svm, datasets
+from sklearn.metrics import roc_curve, auc
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import label_binarize
+from sklearn.multiclass import OneVsRestClassifier
+from scipy import interp
+from sklearn.metrics import roc_auc_score
+
+
 
 import numpy as np
 import pymia.data.conversion as conversion
@@ -137,7 +150,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
                                                 max_depth=10)
 
     start_time = timeit.default_timer()
-    forest.fit(data_train, labels_train)
+    # forest.fit(data_train, labels_train)
 
     print(' Time elapsed:', timeit.default_timer() - start_time, 's')
 
@@ -165,70 +178,156 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     data_test = np.concatenate([img.feature_matrix[0] for img in images_test])
     labels_test = np.concatenate([img.feature_matrix[1] for img in images_test]).squeeze()
 
+    random_state = np.random.RandomState(0)
     # ax = plt.gca()
     # rfc_disp = plot_roc_curve(forest, data_test, labels_test, ax=ax, alpha=0.8)
     # svc_disp.plot(ax=ax, alpha=0.8)
-    disp = plot_confusion_matrix(forest, data_test, labels_test, normalize='true')
+    # disp = plot_confusion_matrix(forest, data_test, labels_test, normalize='true')
+    # plt.show()
+    X= np.concatenate((data_train,data_test))
+    y= np.concatenate((labels_train,labels_test))
+    y = label_binarize(y, classes=[0, 1, 2 , 3, 4 , 5])
+    n_classes = y.shape[1]
+    n_samples, n_features = X.shape
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.5,random_state=0)
+
+    # classifier = OneVsRestClassifier(svm.SVC(kernel='linear', probability=True,
+    #                                          random_state=random_state))
+
+    classifier = OneVsRestClassifier(sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
+                                                n_estimators=5,
+                                                max_depth=2))
+
+    y_score = classifier.fit(X_train, y_train).predict(X_test)
+
+    # Compute ROC curve and ROC area for each class
+    fpr = dict()
+    tpr = dict()
+    roc_auc = dict()
+    for i in range(n_classes):
+        fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
+        roc_auc[i] = auc(fpr[i], tpr[i])
+
+    # Compute micro-average ROC curve and ROC area
+    fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_score.ravel())
+    roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
+
+    # First aggregate all false positive rates
+    all_fpr = np.unique(np.concatenate([fpr[i] for i in range(n_classes)]))
+
+    # Then interpolate all ROC curves at this points
+    mean_tpr = np.zeros_like(all_fpr)
+    for i in range(n_classes):
+        mean_tpr += interp(all_fpr, fpr[i], tpr[i])
+
+    # Finally average it and compute AUC
+    mean_tpr /= n_classes
+
+    fpr["macro"] = all_fpr
+    tpr["macro"] = mean_tpr
+    roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
+
+    plt.figure()
+    lw = 2
+    plt.plot(fpr[2], tpr[2], color='darkorange',
+             lw=lw, label='ROC curve (area = %0.2f)' % roc_auc[2])
+    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver operating characteristic example')
+    plt.legend(loc="lower right")
     plt.show()
 
-    y = label_binarize(labels_test, classes=[0, 1, 2 , 3, 4 , 5])
-    n_classes = y.shape[1]
+
+    # Plot all ROC curves
+    plt.figure()
+    plt.plot(fpr["micro"], tpr["micro"],
+             label='micro-average ROC curve (area = {0:0.2f})'
+                   ''.format(roc_auc["micro"]),
+             color='deeppink', linestyle=':', linewidth=4)
+
+    plt.plot(fpr["macro"], tpr["macro"],
+             label='macro-average ROC curve (area = {0:0.2f})'
+                   ''.format(roc_auc["macro"]),
+             color='navy', linestyle=':', linewidth=4)
+
+    colors = cycle(['aqua', 'darkorange', 'cornflowerblue'])
+    for i, color in zip(range(n_classes), colors):
+        plt.plot(fpr[i], tpr[i], color=color, lw=lw,
+                 label='ROC curve of class {0} (area = {1:0.2f})'
+                       ''.format(i, roc_auc[i]))
+
+    plt.plot([0, 1], [0, 1], 'k--', lw=lw)
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Some extension of Receiver operating characteristic to multi-class')
+    plt.legend(loc="lower right")
+    plt.show()
 
 
-    images_prediction = []
-    images_probabilities = []
-
-
-    for img in images_test:
-        print('-' * 10, 'Testing', img.id_)
-
-
-        start_time = timeit.default_timer()
-        predictions = forest.predict(img.feature_matrix[0])
-        probabilities = forest.predict_proba(img.feature_matrix[0])
-        print(' Time elapsed:', timeit.default_timer() - start_time, 's')
-
-        # convert prediction and probabilities back to SimpleITK images
-        image_prediction = conversion.NumpySimpleITKImageBridge.convert(predictions.astype(np.uint8),
-                                                                        img.image_properties)
-        image_probabilities = conversion.NumpySimpleITKImageBridge.convert(probabilities, img.image_properties)
-
-        # evaluate segmentation without post-processing
-        evaluator.evaluate(image_prediction, img.images[structure.BrainImageTypes.GroundTruth], img.id_)
-
-        images_prediction.append(image_prediction)
-        images_probabilities.append(image_probabilities)
 
 
 
-
-    # post-process segmentation and evaluate with post-processing
-    post_process_params = {'simple_post': True}
-    images_post_processed = putil.post_process_batch(images_test, images_prediction, images_probabilities,
-                                                     post_process_params, multi_process=True)
-
-    for i, img in enumerate(images_test):
-        evaluator.evaluate(images_post_processed[i], img.images[structure.BrainImageTypes.GroundTruth],
-                           img.id_ + '-PP')
-
-        # save results
-        sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + '_SEG.mha'), True)
-        sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ + '_SEG-PP.mha'), True)
-
-    # use two writers to report the results
-    os.makedirs(result_dir, exist_ok=True)  # generate result directory, if it does not exists
-    result_file = os.path.join(result_dir, 'results.csv')
-    writer.CSVWriter(result_file).write(evaluator.results)
-
-    print('\nSubject-wise results...')
-    writer.ConsoleWriter().write(evaluator.results)
-
-    # report also mean and standard deviation among all subjects
-    result_summary_file = os.path.join(result_dir, 'results_summary.csv')
-    functions = {'MEAN': np.mean, 'STD': np.std}
-    writer.CSVStatisticsWriter(result_summary_file, functions=functions).write(evaluator.results)
-    print('\nAggregated statistic results...')
-    writer.ConsoleStatisticsWriter(functions=functions).write(evaluator.results)
+    #
+    # images_prediction = []
+    # images_probabilities = []
+    #
+    #
+    # for img in images_test:
+    #     print('-' * 10, 'Testing', img.id_)
+    #
+    #
+    #     start_time = timeit.default_timer()
+    #     predictions = forest.predict(img.feature_matrix[0])
+    #     probabilities = forest.predict_proba(img.feature_matrix[0])
+    #     print(' Time elapsed:', timeit.default_timer() - start_time, 's')
+    #
+    #     # convert prediction and probabilities back to SimpleITK images
+    #     image_prediction = conversion.NumpySimpleITKImageBridge.convert(predictions.astype(np.uint8),
+    #                                                                     img.image_properties)
+    #     image_probabilities = conversion.NumpySimpleITKImageBridge.convert(probabilities, img.image_properties)
+    #
+    #     # evaluate segmentation without post-processing
+    #     evaluator.evaluate(image_prediction, img.images[structure.BrainImageTypes.GroundTruth], img.id_)
+    #
+    #     images_prediction.append(image_prediction)
+    #     images_probabilities.append(image_probabilities)
+    #
+    #
+    #
+    #
+    # # post-process segmentation and evaluate with post-processing
+    # post_process_params = {'simple_post': True}
+    # images_post_processed = putil.post_process_batch(images_test, images_prediction, images_probabilities,
+    #                                                  post_process_params, multi_process=True)
+    #
+    # for i, img in enumerate(images_test):
+    #     evaluator.evaluate(images_post_processed[i], img.images[structure.BrainImageTypes.GroundTruth],
+    #                        img.id_ + '-PP')
+    #
+    #     # save results
+    #     sitk.WriteImage(images_prediction[i], os.path.join(result_dir, images_test[i].id_ + '_SEG.mha'), True)
+    #     sitk.WriteImage(images_post_processed[i], os.path.join(result_dir, images_test[i].id_ + '_SEG-PP.mha'), True)
+    #
+    # # use two writers to report the results
+    # os.makedirs(result_dir, exist_ok=True)  # generate result directory, if it does not exists
+    # result_file = os.path.join(result_dir, 'results.csv')
+    # writer.CSVWriter(result_file).write(evaluator.results)
+    #
+    # print('\nSubject-wise results...')
+    # writer.ConsoleWriter().write(evaluator.results)
+    #
+    # # report also mean and standard deviation among all subjects
+    # result_summary_file = os.path.join(result_dir, 'results_summary.csv')
+    # functions = {'MEAN': np.mean, 'STD': np.std}
+    # writer.CSVStatisticsWriter(result_summary_file, functions=functions).write(evaluator.results)
+    # print('\nAggregated statistic results...')
+    # writer.ConsoleStatisticsWriter(functions=functions).write(evaluator.results)
 
     # clear results such that the evaluator is ready for the next evaluation
     evaluator.clear()
