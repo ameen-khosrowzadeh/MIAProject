@@ -350,9 +350,9 @@ def init_evaluator() -> eval_.Evaluator:
     # evaluator = eval_.Evaluator(eval_.ConsoleEvaluatorWriter(5))
     evaluation_metrics = [metric.DiceCoefficient(), metric.HausdorffDistance()]
     # evaluation_metrics = [metric.DiceCoefficient(), metric.HausdorffDistance(), metric.Accuracy(), metric.CohenKappaCoefficient(), metric.ProbabilisticDistance()]
-    # evaluation_metrics = [metric.DiceCoefficient(), metric.HausdorffDistance(95), metric.CohenKappaCoefficient(), metric.Accuracy(),
-    #                       metric.JaccardCoefficient(), metric.MutualInformation(), metric.Precision(), metric.VolumeSimilarity(), metric.AreaUnderCurve(),
-    #                       metric.FalseNegative(),metric.FalsePositive(), metric.TruePositive(), metric.TrueNegative(),metric.Sensitivity(),metric.Specificity()]
+    evaluation_metrics = [metric.DiceCoefficient(), metric.HausdorffDistance(95), metric.CohenKappaCoefficient(), metric.Accuracy(),
+                          metric.JaccardCoefficient(), metric.MutualInformation(), metric.Precision(), metric.VolumeSimilarity(), metric.AreaUnderCurve(),
+                          metric.FalseNegative(),metric.FalsePositive(), metric.TruePositive(), metric.TrueNegative(),metric.Sensitivity(),metric.Specificity()]
 
     evaluator = eval_.SegmentationEvaluator(evaluation_metrics,{})
     # evaluator.add_writer(eval_.CSVEvaluatorWriter(os.path.join(directory, result_file_name)))

@@ -196,8 +196,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     #                                          random_state=random_state))
 
     classifier = OneVsRestClassifier(sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
-                                                n_estimators=5,
-                                                max_depth=2))
+                                                n_estimators=10,
+                                                max_depth=5))
 
     y_score = classifier.fit(X_train, y_train).predict(X_test)
 
