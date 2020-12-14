@@ -171,8 +171,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     disp = plot_confusion_matrix(forest, data_test, labels_test, normalize='true')
     plt.show()
 
-    y = label_binarize(labels_test, classes=[0, 1, 2 , 3, 4 , 5])
-    n_classes = y.shape[1]
+    # y = label_binarize(labels_test, classes=[0, 1, 2 , 3, 4 , 5])
+    # n_classes = y.shape[1]
 
 
     images_prediction = []
