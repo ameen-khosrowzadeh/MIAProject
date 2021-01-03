@@ -6,6 +6,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+import ptitprince as pt
+
 
 
 
@@ -84,10 +86,22 @@ def boxplot_per_metric(path,metric):
     # plt.show()
 
 
-def
 
+def my_rain_plot(path):
+    results = pd.read_csv(path + '/results.csv', delimiter=';')
+    del results['HDRFDST']
+    new_results=results.melt(id_vars=["SUBJECT","LABEL"],var_name="metric",value_name="Score")
+    dx = "LABEL";
+    dy = "Score";
+    dhue = "metric";
+    ort = "v";
+    pal = "Set2";
+    sigma = .2
+    f, ax = plt.subplots(figsize=(12, 5))
 
-
+    ax = pt.RainCloud(x=dx, y=dy, hue=dhue, data=new_results, palette=pal, bw=sigma, width_viol=1,
+                      ax=ax, orient=ort, alpha=.65, dodge=True, pointplot=True, move=.1)
+    plt.show()
 
 
 def format_data(data, label: str, metric: str):
@@ -105,12 +119,12 @@ def metric_to_readable_text(metric: str):
 
 
 def main(csv_file: str, plot_dir: str):
-    # metrics = ('DICE', 'HDRFDST')  # the metrics we want to plot the results for
+    metrics = ('DICE', 'HDRFDST')  # the metrics we want to plot the results for
     # metrics = ('DICE', 'HDRFDST', 'ACURCY','KAPPA')
-    metrics = ('DICE', 'HDRFDST', 'ACURCY', 'VOLSMTY', 'PRCISON', 'MUTINF', 'KAPPA', 'JACRD', 'GCOERR')
+    # metrics = ('DICE', 'HDRFDST', 'ACURCY', 'VOLSMTY', 'PRCISON', 'MUTINF', 'KAPPA', 'JACRD', 'GCOERR')
 
 
-    metrics= ('ACURCY', 'AUC' , 'DICE' , 'FN' , 'FP' , 'HDRFDST' , 'JACRD' , 'KAPPA' ,'MUTINF' , 'PRCISON', 'SNSVTY' , 'SPCFTY' , 'TN' , 'TP' , 'VOLSMTY' )
+    # metrics= ('ACURCY', 'AUC' , 'DICE' , 'FN' , 'FP' , 'HDRFDST' , 'JACRD' , 'KAPPA' ,'MUTINF' , 'PRCISON', 'SNSVTY' , 'SPCFTY' , 'TN' , 'TP' , 'VOLSMTY' )
     metrics_yaxis_limits = ((0.0, 1.0), (0.0, None))  # tuples of y-axis limits (min, max) for each metric. Use None if unknown
     labels = ('WhiteMatter', 'Amygdala')  # the brain structures/tissues you are interested in
 
@@ -122,31 +136,31 @@ def main(csv_file: str, plot_dir: str):
     csv_file = last + '/results.csv'
     print(csv_file)
 
-    for metric in metrics:
-        boxplot_per_metric(last,metric)
-
+    # for metric in metrics:
+    #     boxplot_per_metric(last,metric)
+    my_rain_plot(last)
 
     # load the CSVs. We usually want to compare different methods (e.g. a set of different features), therefore,
     # we load two CSV (for simplicity, it is the same here)
-    # todo: adapt to your needs to compare different methods (e.g. load different CSVs)
-    df_method1 = pd.read_csv(csv_file, sep=';')
-    df_method2 = pd.read_csv(csv_file, sep=';')
-    dfs = [df_method1, df_method2]
-
-    # some parameters to improve the plot's readability
-    methods = ('Method 1', 'Method 2')
-    title = 'Your experiment comparing method 1 and 2 on {}'
-
-
-    for label in labels:
-        for metric, (min_, max_) in zip(metrics, metrics_yaxis_limits):
-            boxplot(os.path.join(plot_dir, '{}_{}.png'.format(label, metric)),
-                    [format_data(df, label, metric) for df in dfs],
-                    title.format(label),
-                    'Method', metric_to_readable_text(metric),
-                    methods,
-                    min_, max_
-                    )
+    # # todo: adapt to your needs to compare different methods (e.g. load different CSVs)
+    # df_method1 = pd.read_csv(csv_file, sep=';')
+    # df_method2 = pd.read_csv(csv_file, sep=';')
+    # dfs = [df_method1, df_method2]
+    #
+    # # some parameters to improve the plot's readability
+    # methods = ('Method 1', 'Method 2')
+    # title = 'Your experiment comparing method 1 and 2 on {}'
+    #
+    #
+    # for label in labels:
+    #     for metric, (min_, max_) in zip(metrics, metrics_yaxis_limits):
+    #         boxplot(os.path.join(plot_dir, '{}_{}.png'.format(label, metric)),
+    #                 [format_data(df, label, metric) for df in dfs],
+    #                 title.format(label),
+    #                 'Method', metric_to_readable_text(metric),
+    #                 methods,
+    #                 min_, max_
+    #                 )
 
 
 if __name__ == '__main__':
