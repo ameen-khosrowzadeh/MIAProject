@@ -355,8 +355,10 @@ def init_evaluator() -> eval_.Evaluator:
                           metric.FalseNegative(),metric.FalsePositive(), metric.TruePositive(), metric.TrueNegative(),metric.Sensitivity(),metric.Specificity()]
 
 
-    evaluation_metrics=[metric.DiceCoefficient(),metric.SurfaceDiceOverlap(),metric.JaccardCoefficient(),metric.Accuracy(),metric.FMeasure(),
-                        metric.CohenKappaCoefficient(),metric.VolumeSimilarity(),metric.MutualInformation(),metric.AreaUnderCurve()]
+    evaluation_metrics=[metric.DiceCoefficient(),metric.JaccardCoefficient(),metric.SurfaceDiceOverlap(),metric.Accuracy(),
+                        metric.FMeasure(),metric.CohenKappaCoefficient(),metric.VolumeSimilarity(),metric.MutualInformation(),metric.AreaUnderCurve(),
+                        metric.HausdorffDistance()]
+
     evaluator = eval_.SegmentationEvaluator(evaluation_metrics,{})
     # evaluator.add_writer(eval_.CSVEvaluatorWriter(os.path.join(directory, result_file_name)))
     evaluator.add_label(1, 'WhiteMatter')

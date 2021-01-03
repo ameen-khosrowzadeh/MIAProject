@@ -94,7 +94,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
     images_test = putil.pre_process_batch(crawler.data, pre_process_params, multi_process=False)
 
 
-    for num_estimator in range(1,11):
+    for num_estimator in [10]:
         forest = sk_ensemble.RandomForestClassifier(max_features=images[0].feature_matrix[0].shape[1],
                                                     n_estimators=num_estimator,
                                                     max_depth=10)
@@ -190,7 +190,7 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
         evaluator.clear()
     df=pd.DataFrame(aggregated_results, columns=['n_estimators', 'label', 'metric', 'value'])
     return df
-    xdf = df[df.label == 'GreyMatter']
+    xdf = df[df.label == 'WhiteMatter']
     del xdf['label']
 
 
@@ -207,8 +207,8 @@ def main(result_dir: str, data_atlas_dir: str, data_train_dir: str, data_test_di
 
     plt.figure(2)
     # pd.crosstab(index=[df['Name'], df['Date']], columns=new_df['metric'])
-    my_df = pd.pivot_table(xdf,index=['n_estimators'], columns='metric', values='value')
-    my_df.plot.line()
+    my_df = pd.pivot_table(df,index=['label'], columns='metric', values='value')
+    my_df.plot()
     print(my_df)
 
 
